@@ -13,11 +13,10 @@ const bcryptjs = require('bcryptjs');
 const userSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true,},
     password: { type: String, required: true },
-    user: {
-        name: { type: String },
-        gender: { type: String },
-        age:{type:Number,required:true}
-    },
+        name: { type: String,required:true },
+        gender: { type: String,required:true },
+        age:{type:Number,required:true},
+    
     //history to store previous records
     history:{
         type:[
@@ -53,12 +52,11 @@ userSchema.statics.createUser=async function createUser({name, email,password,ge
             throw new  Error("Password Not Strong", { statusCode: 406 });
         }
         //storing password
-        console.log({name,email,age})
         const salt = bcryptjs.genSaltSync(12);
         const hashPassword = bcryptjs.hashSync(password, salt);
         
         //crreating user
-        const newUser = new this({ email, password: hashPassword, user: {  name,gender,age } });
+        const newUser = new this({ email, password: hashPassword,   name,gender,age  });
         newUser.save();
 
         return { name: newUser.name, _id: newUser._id };
@@ -100,7 +98,7 @@ userSchema.statics.signin = async function signin({ email, password }) {
 userSchema.statics.getUserDetails = async function getUserDetails({ email }) {
     try {
         return this
-            .findOne({ email }, { _id: 0, password: 0, email: 0, __v: 0, "history._id":0 })
+            .findOne({ email }, { _id: 0, password: 0, __v: 0, "history._id":0 })
             .exec()
 
     } catch (error) {
