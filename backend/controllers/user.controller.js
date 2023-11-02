@@ -41,7 +41,7 @@ const SignIn= async (req,res)=>{
           res
             .cookie('accessToken', accessToken, cookieOptions)
             .status(201)
-            .json({ username: user.name, _id: user._id ,authTokenExpiry});
+            .json({ name: user.name, _id: user._id ,authTokenExpiry});
     }
     catch (error) {
         res.status(401).json({ message:error.message});
