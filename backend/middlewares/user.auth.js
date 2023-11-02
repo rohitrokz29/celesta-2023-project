@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 
 const userAuth = async (req, res, next) => {
 
-    const accessToken = req.cookies.accessToken;
+    const {accessToken} = req.cookies;
 
     if (!accessToken) {
         return res.status(401).json({ message: "Token not found" });
@@ -16,8 +16,7 @@ const userAuth = async (req, res, next) => {
         if (result) {
 
             const isExists = await User.findOne({ _id: result._id }).select('_id');
-
-            if (isExists) {
+            if (isExists ) {
                 req._id=isExists._id
                 next();
                 return;

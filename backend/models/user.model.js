@@ -14,18 +14,31 @@ const userSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true,},
     password: { type: String, required: true },
     user: {
-        name: { type: String,default:"" },
-        gender: { type: String, default: "" },
+        name: { type: String },
+        gender: { type: String },
         age:{type:Number,required:true}
+    },
+    //history to store previous records
+    history:{
+        type:[
+            {
+                date: { type: String, default:`${ new Date().getDate()}/${new Date().getMonth()}/${new Date().getFullYear()}`, immutable: true },
+                title:{type:String},
+                description:{type:String}
+            }
+        ]
     }
+
 });
 
 /**
  * SignUp USer CREATEING USER
  */
 userSchema.statics.createUser=async function createUser({name, email,password,gender,age}){
-    
     try {
+        if(!name || !age||!gender ||!password|| !email){
+            throw new Error("Inconplete data",{statusCode:406});
+        }
         if (!validator.isEmail(email)) {
             throw new Error("Invalid Email", { statusCode: 406 });
         }
@@ -40,6 +53,7 @@ userSchema.statics.createUser=async function createUser({name, email,password,ge
             throw new  Error("Password Not Strong", { statusCode: 406 });
         }
         //storing password
+        console.log({name,email,age})
         const salt = bcryptjs.genSaltSync(12);
         const hashPassword = bcryptjs.hashSync(password, salt);
         
@@ -47,10 +61,10 @@ userSchema.statics.createUser=async function createUser({name, email,password,ge
         const newUser = new this({ email, password: hashPassword, user: {  email,gender,age } });
         newUser.save();
 
-        return { username: newUser.name, _id: newUser._id };
+        return { name: newUser.name, _id: newUser._id };
 
     } catch (error) {
-        return ;
+        throw new Error(error.message) ;
     }
 }
 
@@ -83,16 +97,35 @@ userSchema.statics.signin = async function signin({ email, password }) {
  * Find User data
  */
 /* findUser function for finding user from DB */
-userSchema.statics.findUser = async function findUser({ email }) {
+userSchema.statics.getUserDetails = async function getUserDetails({ email }) {
     try {
         return this
-            .findOne({ email }, { _id: 0, password: 0, email: 0, __v: 0, })
+            .findOne({ email }, { _id: 0, password: 0, email: 0, __v: 0, "history._id":0 })
             .exec()
 
     } catch (error) {
         throw new Error("User Not Found", { StatusCode: 404 });
     }
 }
+
+userSchema.statics.addHistory=async function addHistory({_id,description,title}){
+    try {
+        
+        let newItem={title,description};
+        const result = await this.updateOne({ _id }, {
+            $push: {
+                history: { $each: [newItem], $position: 0 }
+            }
+        }, { new: true })
+            .lean()
+            .exec()
+        if(!result) return null;
+        return result;
+    } catch (error) {
+        return null;
+    }
+}
+
 
 
 module.exports = mongoose.model('user', userSchema);
