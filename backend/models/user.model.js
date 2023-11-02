@@ -76,7 +76,7 @@ userSchema.statics.signin = async function signin({ email, password }) {
     }
     try {
         //finging user
-        const user = await this.findOne({ email: email }).select('_id password user.name');
+        const user = await this.findOne({ email: email }).select('_id password name');
         if (!user) {
             //user doesnot exist 
             throw new Error("User doesn't Exist", { statusCode: 404 });
@@ -85,7 +85,7 @@ userSchema.statics.signin = async function signin({ email, password }) {
             //passwords doesnot matched
             throw new Error("Incorrect Password", { statusCode: 406 });
         }
-        return { name:user.user.name, _id: user._id };
+        return { name:user.name, _id: user._id };
     } catch (error) {
         throw new Error(error.message, { statusCode: 500 });
     }
