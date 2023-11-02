@@ -37,7 +37,7 @@ const userSchema = new mongoose.Schema({
 userSchema.statics.createUser=async function createUser({name, email,password,gender,age}){
     try {
         if(!name || !age||!gender ||!password|| !email){
-            throw new Error("Inconplete data",{statusCode:406});
+            throw new Error("Inconplete Information",{statusCode:406});
         }
         if (!validator.isEmail(email)) {
             throw new Error("Invalid Email", { statusCode: 406 });
@@ -58,7 +58,7 @@ userSchema.statics.createUser=async function createUser({name, email,password,ge
         const hashPassword = bcryptjs.hashSync(password, salt);
         
         //crreating user
-        const newUser = new this({ email, password: hashPassword, user: {  email,gender,age } });
+        const newUser = new this({ email, password: hashPassword, user: {  name,gender,age } });
         newUser.save();
 
         return { name: newUser.name, _id: newUser._id };
